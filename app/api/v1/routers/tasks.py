@@ -1,53 +1,81 @@
-from fastapi import APIRouter, Depends, HTTPException
+from bson import ObjectId
+from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jwt import decode, DecodeError
-from app.models.task import Task
+from jwt import ExpiredSignatureError, decode, DecodeError
+from app.models.task import TaskCollection, TaskModel
+
+from app.db import db_connection
 
 from http import HTTPStatus
 
 from app.security import validate_token
 
+from app.exceptions import GeneralException, NotFoundException
+
 router = APIRouter()
 
-all_taks = [
-    {
-        'id': 1,
-        'title': 'Task 1',
-        'description': 'Task 1 description',
-        'date': '2022-01-01',
-        'owner': 1
-    },
-    {	
-        'id': 2,
-        'title': 'Task 2',
-        'description': 'Task 2 description',
-        'date': '2022-01-01',
-        'owner': 2
-    }
-]
-
-@router.get('/', status_code=HTTPStatus.OK)
-def index(
+@router.get('/', 
+    status_code=HTTPStatus.OK,
+    response_model=TaskCollection,
+    response_model_by_alias=False)
+async def index(
     token: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
-    response_model=[Task]
 ):
 
-    credentials_exception = HTTPException(
-        status_code=HTTPStatus.UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    
 
     try:
-        token_data = validate_token(token, credentials_exception)
+        token_data = validate_token(token)
 
-        return_tasks = []
+        if token_data.role != 'admin':
+            tasks_db = await db_connection.db['tasks'].find({'owner': token_data.user_id}).to_list(1000)
+        else:
+            tasks_db = await db_connection.db['tasks'].find().to_list(1000)
+         
+        
+        return TaskCollection(tasks=tasks_db)
+    except Exception:
+        raise GeneralException
 
-        for task in all_taks:
-            if task['owner'] == token_data.user_id:
-                return_tasks.append(task)
+@router.get('/{task_id}', 
+    status_code=HTTPStatus.OK,
+    response_description="Get task by id",
+    response_model=TaskModel,
+    response_model_by_alias=False)
+async def get_task( 
+    task_id: str,
+    token: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+):
+   
+    token_data = validate_token(token)
+    if token_data.role == 'admin':
+        if (
+            task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id)})
+        ) is not None:
+            return TaskModel(**task_db)
 
-        return return_tasks
+        raise NotFoundException
+    else:
+        if (
+            task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id), 'owner': token_data.user_id})
+        ) is not None:
+            return TaskModel(**task_db)
 
-    except DecodeError:
-        raise credentials_exception
+        raise NotFoundException
+    
+   
+@router.post('/', status_code=HTTPStatus.CREATED)
+async def create_task(
+    task: TaskModel = Body(...),
+    token: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+):
+    try:
+        token_data = validate_token(token)
+        task.owner = token_data.user_id
+        new_task = await db_connection.db['tasks'].insert_one(task.model_dump(by_alias=True, exclude=['id']))
+        task_db = await db_connection.db['tasks'].find_one({'_id': new_task.inserted_id})
+       
+        return TaskModel(**task_db)
+    except Exception as e:
+        print(e)
+        raise GeneralException
