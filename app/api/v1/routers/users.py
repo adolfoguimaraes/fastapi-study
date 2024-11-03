@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import DecodeError
 
@@ -7,24 +7,25 @@ from app.security import TokenData
 
 from http import HTTPStatus
 
+from app.exceptions import CredentialException
+
 
 router = APIRouter()
 
-@router.get('/', status_code=HTTPStatus.OK)
+@router.get('/', 
+    status_code=HTTPStatus.OK,
+    summary="Retrieve the current user information",
+    response_description="The current user information",
+    response_model=TokenData,
+    response_model_by_alias=False)
 def index(
-    token: HTTPAuthorizationCredentials = Depends(HTTPBearer()), response_model=TokenData
+    token: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ):
-    
-    credentials_exception = HTTPException(
-        status_code=HTTPStatus.UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
 
     try:
-        token_data = validate_token(token, credentials_exception)
+        token_data = validate_token(token)
     except DecodeError:
-        raise credentials_exception  
+        raise CredentialException  
 
 
     return token_data

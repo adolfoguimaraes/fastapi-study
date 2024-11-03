@@ -30,7 +30,6 @@ class UpdateTaskModel(BaseModel):
     title: Optional[str] = Field(...)
     description: Optional[str] = Field(...)
     date: Optional[str] = Field(...)
-    owner: Optional[int] = Field(...)
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -40,7 +39,6 @@ class UpdateTaskModel(BaseModel):
                 'title': 'Implementar funcionalidade de inserção de tarefas',
                 'description': 'Implementar funcionalidade de inserção de tarefas',
                 'date': '2024-11-02',
-                'owner': 1
             }
         }
     )

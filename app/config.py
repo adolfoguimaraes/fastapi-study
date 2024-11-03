@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     JWT_EXPIRES: int
     MONGO_URI: str
     MONGO_DB: str
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_DB: int
 
     class Config:   
         env_file = '.env'

@@ -10,12 +10,23 @@ from app.security import Token, UserInfo
 router = APIRouter()
 
 
-@router.get("/", response_model=Token)
+@router.get("/",
+    summary="Login for access token.",
+    response_description="Token access for authentication.",         
+    response_model=Token,
+    response_model_by_alias=False)
 async def login_for_access_token(
     user: UserInfo = Depends()
 ): 
-    token = create_access_token(username=user.username, user_id=user.id, role=user.role, expires_delta=timedelta(minutes=settings.JWT_EXPIRES))
+    """
+    Login for access token.
 
-    return {'access_token': token, 'token_type': 'bearer'}
+    - `username` is required.
+    - `password` is required.
+    - `role` is required.
+    """
+    token = create_access_token(username=user.username, user_id=user.id, role=user.role, expires_delta=timedelta(minutes=settings.JWT_EXPIRES))
+    
+    return Token(access_token=token, token_type='bearer')
 
  
