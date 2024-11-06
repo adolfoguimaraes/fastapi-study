@@ -5,11 +5,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import ExpiredSignatureError, decode, DecodeError
 from app.models.task import TaskCollection, TaskModel, UpdateTaskModel
 
-from app.db import db_connection
+from app.db.mongo_connection import db_connection
 
 from http import HTTPStatus
 
-from app.security import validate_token
+from app.auth.security import validate_token
 
 from app.exceptions import GeneralException, NotFoundException
 

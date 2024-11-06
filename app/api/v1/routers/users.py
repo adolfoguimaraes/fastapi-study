@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import DecodeError
 
-from app.security import validate_token
-from app.security import TokenData
+from app.auth.security import validate_token
+from app.auth.security import TokenData
 
 from http import HTTPStatus
 

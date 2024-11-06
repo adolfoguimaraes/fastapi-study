@@ -47,6 +47,7 @@ def validate_token(token):
         raise CredentialException
     except ExpiredSignatureError:
         raise TokenExpirationException
-    except Exception:
+    except Exception as e:
+        print(e)
         raise GeneralException
     
