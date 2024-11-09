@@ -1,6 +1,7 @@
+
 import redis
 from app.config import settings
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import uuid
 
 class SessionRedis:
@@ -9,16 +10,15 @@ class SessionRedis:
 
     def create_session(self, user_id):
 
-        register_time = datetime.now().isoformat()
         session_data = {
             "session_id": str(uuid.uuid4()),
             'user_id': user_id, 
-            "last_access": register_time, 
-            "expire_seconds": settings.SESSION_EXPIRE_SECONDS
+            "last_access": datetime.now(timezone.utc).timestamp(), 
+            "expires": (datetime.now(timezone.utc) + timedelta(seconds=settings.SESSION_EXPIRE_SECONDS)).timestamp()
         }
 
         self.__redis.hmset(f"session:{user_id}", session_data)
-        self.__redis.expire(f"session:{user_id}", settings.SESSION_EXPIRE_SECONDS)
+        self.__redis.expire(f"session:{user_id}", int(settings.SESSION_EXPIRE_SECONDS))
 
     def get_connection(self):
         return self.__redis

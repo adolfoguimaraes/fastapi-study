@@ -25,3 +25,9 @@ NotFoundException = HTTPException(
     status_code=HTTPStatus.NOT_FOUND,
     detail="Task not found.",
 )
+
+SessionExpiredException = HTTPException(
+    status_code=HTTPStatus.UNAUTHORIZED,
+    detail="Session has expired",
+    headers={"WWW-Authenticate": "Bearer"},
+)

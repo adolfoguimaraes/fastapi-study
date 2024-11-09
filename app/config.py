@@ -1,8 +1,8 @@
 
-from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
-load_dotenv()
+load_dotenv(override=True)
 
 class Settings(BaseSettings):
     JWT_SECRET_KEY: str
@@ -18,5 +18,7 @@ class Settings(BaseSettings):
     class Config:   
         env_file = '.env'
 
+def get_settings() -> Settings:
+    return Settings()
 
-settings = Settings()   
+settings = get_settings()   

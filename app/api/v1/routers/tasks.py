@@ -9,9 +9,10 @@ from app.db.mongo_connection import db_connection
 
 from http import HTTPStatus
 
-from app.auth.security import validate_token
+from app.auth.security import  get_current_user
 
-from app.exceptions import GeneralException, NotFoundException
+from app.exceptions import GeneralException, NotFoundException, SessionExpiredException
+
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ router = APIRouter()
 async def index(
     limit: Optional[int] = 100,
     skip:  Optional[int] = 0,
-    token: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    current_user: dict = Depends(get_current_user)
 ):
     """
         Retrieve all tasks of the current user.
@@ -35,15 +36,17 @@ async def index(
     """
 
     try:
-        token_data = validate_token(token)
 
-        if token_data.role != 'admin':
-            tasks_db = await db_connection.db['tasks'].find({'owner': token_data.user_id}).skip(skip).limit(limit).to_list()
+        if current_user.role != 'admin':
+            tasks_db = await db_connection.db['tasks'].find({'owner': current_user.user_id}).skip(skip).limit(limit).to_list()
         else:
             tasks_db = await db_connection.db['tasks'].find().skip(skip).limit(limit).to_list()
         
         return TaskCollection(tasks=tasks_db)
+    except HTTPException as e:
+        raise e
     except Exception as e:
+        print(e)
         raise GeneralException
 
 @router.get('/{task_id}', 
@@ -54,7 +57,7 @@ async def index(
     response_model_by_alias=False)
 async def get_task( 
     task_id: str,
-    token: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+    current_user: dict = Depends(get_current_user),
 ):
     
     """
@@ -63,9 +66,8 @@ async def get_task(
         - `task_id` is required.
         - Requires authentication with `JWT token`.
     """
-   
-    token_data = validate_token(token)
-    if token_data.role == 'admin':
+    
+    if current_user.role == 'admin':
         if (
             task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id)})
         ) is not None:
@@ -74,7 +76,7 @@ async def get_task(
         raise NotFoundException
     else:
         if (
-            task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id), 'owner': token_data.user_id})
+            task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id), 'owner': current_user.user_id})
         ) is not None:
             return TaskModel(**task_db)
 
@@ -84,11 +86,10 @@ async def get_task(
 @router.post('/', status_code=HTTPStatus.CREATED)
 async def create_task(
     task: TaskModel = Body(...),
-    token: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+    current_user: dict = Depends(get_current_user),
 ):
     try:
-        token_data = validate_token(token)
-        task.owner = token_data.user_id
+        task.owner = current_user.user_id
         new_task = await db_connection.db['tasks'].insert_one(task.model_dump(by_alias=True, exclude=['id']))
         task_db = await db_connection.db['tasks'].find_one({'_id': new_task.inserted_id})
        
@@ -101,10 +102,9 @@ async def create_task(
 async def update_task(
     task_id: str,
     task: UpdateTaskModel = Body(...),
-    token: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+    current_user: dict = Depends(get_current_user),
 ):
     
-    token_data = validate_token(token)
 
     task = {
         k: v for k, v in task.model_dump(by_alias=True).items() if v is not None
@@ -112,7 +112,7 @@ async def update_task(
 
     if len(task) > 0:
 
-        if token_data.role == 'admin':
+        if current_user.role == 'admin':
             if (
                 task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id)})
             ) is not None:
@@ -121,7 +121,7 @@ async def update_task(
                 raise NotFoundException
         else:
             if (
-                task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id), 'owner': token_data.user_id})
+                task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id), 'owner': current_user.user_id})
             ) is not None:
                 await db_connection.db['tasks'].update_one({'_id': ObjectId(task_id)}, {'$set': task})
             else:
@@ -136,11 +136,10 @@ async def update_task(
 @router.delete('/{task_id}', status_code=HTTPStatus.NO_CONTENT)
 async def delete_task(
     task_id: str,
-    token: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+    current_user: dict = Depends(get_current_user),
 ):
     
-    token_data = validate_token(token)
-    if token_data.role == 'admin':
+    if current_user.role == 'admin':
         if (
             task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id)})
         ) is not None:
@@ -149,7 +148,7 @@ async def delete_task(
             raise NotFoundException
     else:
         if (
-            task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id), 'owner': token_data.user_id})
+            task_db := await db_connection.db['tasks'].find_one({'_id': ObjectId(task_id), 'owner': current_user.user_id})
         ) is not None:
             await db_connection.db['tasks'].delete_one({'_id': ObjectId(task_id)})
         else:
