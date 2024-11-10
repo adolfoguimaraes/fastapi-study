@@ -11,7 +11,9 @@ from http import HTTPStatus
 
 from app.auth.security import  get_current_user
 
-from app.exceptions import GeneralException, NotFoundException, SessionExpiredException
+from app.exceptions import GeneralException, NotFoundException
+
+from app.middleware.logs.log_middleware import logger
 
 
 router = APIRouter()
@@ -44,9 +46,10 @@ async def index(
         
         return TaskCollection(tasks=tasks_db)
     except HTTPException as e:
+        logger.getLogger().warning(e.detail)
         raise e
     except Exception as e:
-        print(e)
+        logger.getLogger().warning(e.detail)
         raise GeneralException
 
 @router.get('/{task_id}', 

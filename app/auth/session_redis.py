@@ -17,13 +17,15 @@ class SessionRedis:
             "expires": (datetime.now(timezone.utc) + timedelta(seconds=settings.SESSION_EXPIRE_SECONDS)).timestamp()
         }
 
-        self.__redis.hmset(f"session:{user_id}", session_data)
-        self.__redis.expire(f"session:{user_id}", int(settings.SESSION_EXPIRE_SECONDS))
+        self.__redis.hmset(f"session:{session_data['session_id']}", session_data)
+        self.__redis.expire(f"session:{session_data['session_id']}", int(settings.REDIS_DELETE_SECONDS))
+
+        return session_data
 
     def get_connection(self):
         return self.__redis
     
-    def get_session(self, user_id):
-        return self.__redis.hgetall(f"session:{user_id}")
+    def get_session(self, session_id):
+        return self.__redis.hgetall(f"session:{session_id}")
 
 session_redis = SessionRedis()

@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime, timezone
 import json
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.auth.session_redis import session_redis
 from app.config import settings
@@ -38,10 +38,15 @@ class UserData(BaseModel):
     role: str
     session_id: str
 
-async def get_current_user(token: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+async def get_current_user(
+        request: Request,
+        token: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+        ):
 
     token_data = validate_token(token)
-    session_data = validate_session(token_data.user_id)
+
+    session_id = request.cookies.get('session_id')
+    session_data = validate_session(session_id)
     
     user_data = {
         "username": token_data.username,
@@ -84,8 +89,8 @@ def validate_token(token):
         print(e)
         raise GeneralException
     
-def validate_session(user_id: str):
-    session = session_redis.get_session(user_id)
+def validate_session(session_id: str):
+    session = session_redis.get_session(session_id)
 
     if not session or len(session) == 0:
         raise SessionExpiredException
@@ -100,7 +105,7 @@ def validate_session(user_id: str):
 
     session_data = SessionData.model_validate(session)
     
-    #if session_data.expires < datetime.now(timezone.utc).timestamp():
-    #    raise SessionExpiredException
+    if session_data.expires < datetime.now(timezone.utc).timestamp():
+        raise SessionExpiredException
     
     return session_data

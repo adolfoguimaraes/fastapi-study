@@ -4,7 +4,7 @@ LOGGING_CONFIG = {
     "formatters": {
         "default": {
             "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": "[%(levelname)s] - %(asctime)s - %(name)s - %(message)s",
+            "fmt": "[%(levelname)s] - %(asctime)s - %(name)s - %(session_id)s - %(message)s",
         },
     },
     "handlers": {
