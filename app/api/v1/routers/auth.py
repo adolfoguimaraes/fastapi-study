@@ -41,11 +41,11 @@ async def login_for_access_token(
             key='session_id',
             value=session_data['session_id'],
             httponly=True,
-            expires=datetime.fromtimestamp(session_data['expires'], tz=timezone.utc)
+            expires=datetime.now(timezone.utc) + timedelta(seconds=settings.SESSION_COKIES_EXPIRE_SECONDS)
         )
 
-        logger.getLogger().info(f"user {token_data.user_id} ({token_data.username} - {token_data.role}) authenticated.")
-        logger.getLogger().info(f"user {token_data.user_id} - session {session_data['session_id']} created.")
+        logger.getLogger().info(f"user {token_data.user_id} authenticated - session {session_data['session_id']} created.")
+        
 
         
     return Token(access_token=token, token_type='bearer')

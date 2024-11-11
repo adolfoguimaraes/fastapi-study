@@ -1,7 +1,9 @@
 
-from fastapi import Request
+from fastapi import Request, Response
 import logging
 from .log_config import LOGGING_CONFIG
+
+from http import HTTPStatus
 
 from contextvars import ContextVar
 
@@ -16,9 +18,11 @@ class SessionIDFilter(logging.Filter):
 
 class LoggerMiddleware:
     def __init__(self):
+        
         logging.config.dictConfig(LOGGING_CONFIG)
         self.__logger = logging.getLogger("app_logger")
         self.__logger.addFilter(SessionIDFilter())
+        
         
 
         
@@ -27,21 +31,22 @@ class LoggerMiddleware:
 
     async def log_middleware(self, request: Request, call_next):
 
+
         session_id = request.cookies.get('session_id', 'unknown')
         session_id_var.set(session_id)
+
+        response = await call_next(request)
 
         log_dict = {
             "method": request.method,
             "path": request.url.path,
             "query_params": request.query_params,
             "session_id": request.cookies.get('session_id'),
+            
         }
 
-        str_log = f"{log_dict['method']} {log_dict['path']}"
-
-        self.__logger.info(str_log)
-
-        response = await call_next(request)
+        
+        self.__logger.info(f"{request.method} {request.url.path} : {response.status_code} {HTTPStatus(response.status_code).phrase}", extra=log_dict)
 
         return response
     

@@ -12,6 +12,8 @@ from jwt import DecodeError, ExpiredSignatureError, decode, encode
 
 from app.exceptions import CredentialException, TokenExpirationException, GeneralException, SessionExpiredException
 
+from app.middleware.logs.log_middleware import logger
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -46,6 +48,7 @@ async def get_current_user(
     token_data = validate_token(token)
 
     session_id = request.cookies.get('session_id')
+
     session_data = validate_session(session_id)
     
     user_data = {
@@ -82,11 +85,13 @@ def validate_token(token):
         return token_data
     
     except DecodeError:
+        logger.getLogger().warning(e)
         raise CredentialException
-    except ExpiredSignatureError:
+    except ExpiredSignatureError as e:
+        logger.getLogger().warning(e)
         raise TokenExpirationException
     except Exception as e:
-        print(e)
+        logger.getLogger().warning(e)
         raise GeneralException
     
 def validate_session(session_id: str):
@@ -106,6 +111,12 @@ def validate_session(session_id: str):
     session_data = SessionData.model_validate(session)
     
     if session_data.expires < datetime.now(timezone.utc).timestamp():
-        raise SessionExpiredException
+        logger.getLogger().info(f"Session {session_data.session_id} renewed.")
+        session = session_redis.renew_session(session_id)
+        session_data = SessionData.model_validate(session)
+       
     
     return session_data
+
+
+    

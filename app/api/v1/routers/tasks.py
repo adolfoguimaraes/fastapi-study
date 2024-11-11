@@ -46,10 +46,10 @@ async def index(
         
         return TaskCollection(tasks=tasks_db)
     except HTTPException as e:
-        logger.getLogger().warning(e.detail)
+        logger.getLogger().warning(e)
         raise e
     except Exception as e:
-        logger.getLogger().warning(e.detail)
+        logger.getLogger().warning(e)
         raise GeneralException
 
 @router.get('/{task_id}', 

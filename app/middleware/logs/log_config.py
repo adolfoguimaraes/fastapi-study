@@ -3,11 +3,25 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "default": {
-            "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": "[%(levelname)s] - %(asctime)s - %(name)s - %(session_id)s - %(message)s",
+            "format": "%(asctime)s - %(levelname)s - %(session_id)s - %(message)s",
         },
+        "uvicorn": {
+            "format": "%(asctime)s - %(levelname)s - %(message)s"
+        }
     },
     "handlers": {
+        "uvicorn": {
+            "class": "logging.StreamHandler",
+            "formatter": "uvicorn",
+        },
+        "uvicorn_file": {
+            "formatter": "uvicorn",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "level": "INFO",
+            "filename": "./logs/server.log",
+            "when": "midnight",
+            "encoding": "utf8",
+        },
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "default",
@@ -16,10 +30,11 @@ LOGGING_CONFIG = {
         },
         "file": {
             "formatter": "default",
-            "class": "logging.handlers.RotatingFileHandler",
+            "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "DEBUG",
-            "filename": "/tmp/applog.log",
-            "mode": "a",
+            "filename": "./logs/app.log",
+            "when": "midnight",
+            "encoding": "utf8",
         },
     },
     "loggers": {
@@ -27,6 +42,22 @@ LOGGING_CONFIG = {
             "handlers": ["file", "console"],
             "level": "DEBUG",
             "propagate": False,
-        }
+        },
+        "uvicorn": {
+            "handlers": ["uvicorn","uvicorn_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "uvicorn.error": {
+            "handlers": ["uvicorn","uvicorn_file"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "uvicorn.access": {
+            "handlers": ["uvicorn","uvicorn_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+      
     },
 }

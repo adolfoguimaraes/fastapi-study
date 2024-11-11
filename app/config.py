@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_DB: int
     SESSION_EXPIRE_SECONDS: int
+    SESSION_COKIES_EXPIRE_SECONDS: int
     REDIS_DELETE_SECONDS: int
 
     class Config:   

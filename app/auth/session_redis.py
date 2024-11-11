@@ -4,6 +4,8 @@ from app.config import settings
 from datetime import datetime, timedelta, timezone
 import uuid
 
+from app.middleware.logs.log_middleware import logger
+
 class SessionRedis:
     def __init__(self):
         self.__redis = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
@@ -19,6 +21,18 @@ class SessionRedis:
 
         self.__redis.hmset(f"session:{session_data['session_id']}", session_data)
         self.__redis.expire(f"session:{session_data['session_id']}", int(settings.REDIS_DELETE_SECONDS))
+
+        return session_data
+    
+    def renew_session(self, session_id):
+        current_session = session_redis.get_session(session_id)
+        session_data = {
+            "session_id": session_id,
+            "user_id": current_session.get(b'user_id'), 
+            "last_access": datetime.now(timezone.utc).timestamp(), 
+            "expires": (datetime.now(timezone.utc) + timedelta(seconds=settings.SESSION_EXPIRE_SECONDS)).timestamp()
+        }
+        self.__redis.hmset(f"session:{session_data['session_id']}", session_data)
 
         return session_data
 
