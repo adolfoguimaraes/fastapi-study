@@ -2,6 +2,9 @@ volumes:
   mongo-data:
     name: mongo-data
     driver: local
+  app-data:
+    name: app-data
+    driver: local
 
 networks:
   app-network:
@@ -11,7 +14,7 @@ networks:
 services:
   fastapi-app:
     container_name: fastapi-app
-    image: fastapi-app
+    image: localhost/fastapi-app
     build:
       context: .
       dockerfile: Dockerfile
@@ -29,10 +32,13 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - JWT_ALGORITHM=${JWT_ALGORITHM}
       - JWT_EXPIRES=${JWT_EXPIRES}
+      - LOGS_PATH=${LOGS_PATH}
     depends_on:
       - mongo-local
       - redis-local
     restart: always
+    volumes:
+      - app-data:/app
     networks:
       - app-network
 

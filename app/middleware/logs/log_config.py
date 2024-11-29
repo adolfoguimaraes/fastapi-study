@@ -1,3 +1,5 @@
+from app.config import settings
+
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -18,7 +20,7 @@ LOGGING_CONFIG = {
             "formatter": "uvicorn",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "INFO",
-            "filename": "./logs/server.log",
+            "filename": f"{settings.LOGS_PATH}/server.log",
             "when": "midnight",
             "encoding": "utf8",
         },
@@ -32,7 +34,7 @@ LOGGING_CONFIG = {
             "formatter": "default",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "DEBUG",
-            "filename": "./logs/app.log",
+            "filename": f"{settings.LOGS_PATH}/app.log",
             "when": "midnight",
             "encoding": "utf8",
         },

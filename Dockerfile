@@ -6,7 +6,9 @@ copy ./requirements.txt /code/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-COPY . /code
+COPY app/ /code/app
+
+RUN mkdir -p /app/logs
 
 EXPOSE 8080
 

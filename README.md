@@ -18,3 +18,7 @@ REDIS_DELETE_SECONDS=
 
 SESSION_EXPIRE_SECONDS=
 ```
+
+Comando 
+
+podman compose -f podman-compose.yml --env-file .env up -d --build
