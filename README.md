@@ -25,7 +25,11 @@ LOGS_PATH=
 ## Comandos para geração dos _containers_
 
 **Subir os _containers_**
+```sh
 podman compose -f compose.yaml --env-file .env up -d --build
+```
 
 **Remover os _containers_**
+```sh
 podman compose -f compose.yaml down
+```
