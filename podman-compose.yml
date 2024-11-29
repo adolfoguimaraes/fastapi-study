@@ -1,0 +1,57 @@
+volumes:
+  mongo-data:
+    name: mongo-data
+    driver: local
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+
+services:
+  fastapi-app:
+    container_name: fastapi-app
+    image: fastapi-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # Mapear a porta do host para o container
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_DB=${MONGO_DB}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_DELETE_SECONDS=${REDIS_DELETE_SECONDS}
+      - SESSION_EXPIRE_SECONDS=${SESSION_EXPIRE_SECONDS}
+      - SESSION_COOKIES_EXPIRE_SECONDS=${SESSION_COOKIES_EXPIRE_SECONDS}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - JWT_EXPIRES=${JWT_EXPIRES}
+    depends_on:
+      - mongo-local
+      - redis-local
+    restart: always
+    networks:
+      - app-network
+
+  mongo-local:
+    container_name: mongo-local
+    image: mongo:latest  # Verifique sempre a versão e segurança da imagem
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db  # Persistindo dados do banco
+    restart: always
+    networks:
+      - app-network
+
+  redis-local:
+    container_name: redis-local
+    image: redis:latest
+    ports:
+      - "6380:6379"
+    restart: always
+    networks:
+      - app-network
