@@ -17,7 +17,6 @@ class Settings(BaseSettings):
     SESSION_COOKIES_EXPIRE_SECONDS: int
     REDIS_DELETE_SECONDS: int
     LOGS_PATH: str
-
     class Config:   
         env_file = '.env'
 
