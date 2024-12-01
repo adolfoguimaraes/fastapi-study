@@ -74,13 +74,13 @@ def validate_token(token):
     try:
         payload = decode(token.credentials, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         username: str = payload.get('sub')
-        id = payload.get('id')
-        role = payload.get('role')
+        id_ = payload.get('id')
+        role_ = payload.get('role')
         
         if not username:
             raise CredentialException  
         
-        token_data = TokenData(username=username, user_id=id, role=role)
+        token_data = TokenData(username=username, user_id=id_, role=role_)
 
         return token_data
     

@@ -2,7 +2,7 @@ FROM python:3.12-alpine
 
 WORKDIR /code
 
-copy ./requirements.txt /code/requirements.txt
+COPY ./requirements.txt /code/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 

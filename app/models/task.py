@@ -1,6 +1,7 @@
 from typing import  Annotated, List, Optional
 from bson import ObjectId
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+from app.models.constants import EXAMPLE_TITLE, EXAMPLE_DESCRIPTION, EXAMPLE_DATE
 
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
@@ -18,9 +19,9 @@ class TaskModel(BaseModel):
         json_encoders = {ObjectId: str},
         json_schema_extra={
             'example': {
-                'title': 'Implementar funcionalidade de inserção de tarefas',
-                'description': 'Implementar funcionalidade de inserção de tarefas',
-                'date': '2024-11-02',
+                'title': EXAMPLE_TITLE,
+                'description': EXAMPLE_DESCRIPTION,
+                'date': EXAMPLE_DATE,
                 'owner': 1
             }
         }
@@ -36,9 +37,9 @@ class UpdateTaskModel(BaseModel):
         json_encoders={ObjectId: str},
         json_schema_extra={
             'example': {
-                'title': 'Implementar funcionalidade de inserção de tarefas',
-                'description': 'Implementar funcionalidade de inserção de tarefas',
-                'date': '2024-11-02',
+                'title': EXAMPLE_TITLE,
+                'description': EXAMPLE_DESCRIPTION,
+                'date': EXAMPLE_DATE,
             }
         }
     )
