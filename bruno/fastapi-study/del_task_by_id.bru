@@ -1,0 +1,20 @@
+meta {
+  name: del_task_by_id
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{url_base}}/api/v1/tasks/:task_id
+  body: none
+  auth: none
+}
+
+params:path {
+  task_id: 67b541d1191e7f953d476824
+}
+
+headers {
+  accept: */*
+  Authorization: Bearer {{JWT_TOKEN}}
+}

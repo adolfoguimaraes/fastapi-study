@@ -1,7 +1,9 @@
 
-from fastapi import Request, Response
+from fastapi import Request
 import logging
 from .log_config import LOGGING_CONFIG
+
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from http import HTTPStatus
 
@@ -16,15 +18,12 @@ class SessionIDFilter(logging.Filter):
         record.session_id = session_id_var.get()
         return True
 
-class LoggerMiddleware:
+class LoggerMiddleware(BaseHTTPMiddleware):
     def __init__(self):
         
         logging.config.dictConfig(LOGGING_CONFIG)
         self.__logger = logging.getLogger("app_logger")
         self.__logger.addFilter(SessionIDFilter())
-        
-        
-
         
     def getLogger(self):
         return self.__logger

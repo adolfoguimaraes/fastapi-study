@@ -1,0 +1,23 @@
+meta {
+  name: get_task_by_id
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{url_base}}/api/v1/tasks/:task_id
+  body: none
+  auth: none
+}
+
+params:path {
+  task_id: curl -X 'GET' \
+    'http://localhost:8080/api/v1/tasks/67b53ecd191e7f953d476822' \
+    -H 'accept: application/json' \
+  67b53ecd191e7f953d476822
+}
+
+headers {
+  accept: application/json
+  Authorization: Bearer {{JWT_TOKEN}}
+}

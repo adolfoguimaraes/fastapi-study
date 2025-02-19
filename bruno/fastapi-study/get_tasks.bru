@@ -1,0 +1,21 @@
+meta {
+  name: get_tasks
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{url_base}}/api/v1/tasks/?limit=100&skip=0
+  body: none
+  auth: none
+}
+
+params:query {
+  limit: 100
+  skip: 0
+}
+
+headers {
+  accept: application/json
+  Authorization: Bearer {{JWT_TOKEN}}
+}

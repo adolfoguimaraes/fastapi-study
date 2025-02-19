@@ -1,0 +1,26 @@
+meta {
+  name: post_tasks
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{url_base}}/api/v1/tasks/
+  body: json
+  auth: none
+}
+
+headers {
+  accept: application/json
+  Authorization: Bearer {{JWT_TOKEN}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "date": "2024-11-02",
+    "description": "Implementar funcionalidade de inserção de tarefas",
+    "owner": 1,
+    "title": "Implementar funcionalidade de inserção de tarefas"
+  }
+}

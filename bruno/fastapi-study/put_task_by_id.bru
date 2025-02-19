@@ -1,0 +1,29 @@
+meta {
+  name: put_task_by_id
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{url_base}}/api/v1/tasks/:task_id
+  body: json
+  auth: none
+}
+
+params:path {
+  task_id: 67b53ecd191e7f953d476822
+}
+
+headers {
+  accept: application/json
+  Authorization: Bearer {{JWT_TOKEN}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "date": "2025-11-02",
+    "description": "Implementar funcionalidade de inserção de tarefas",
+    "title": "Implementar funcionalidade de inserção de tarefas"
+  }
+}
